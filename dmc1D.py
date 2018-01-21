@@ -73,16 +73,29 @@ class wavefunction:
             mask_survive = (Diff>0)
             nDeaths=np.sum(np.array(Diff<0).astype(int))
             survivors=x[mask_survive]
+            #print survivors.shape, 'before and after',
             #Recrossing correction will go here
+            #print'Census: Deaths:',nDeaths,
             if self.recrossing:
+                #print 'recrossing correction activated!!'
                 P_recrossDeath=np.exp(-2.0*(x-dx)*x*np.sqrt(self.mass*self.mass)/self.dtau) ##mass is reduced mass!
+                #print P_recrossDeath[0:10], x[0:10],(x-dx)[0:10], np.sqrt(self.mass*self.mass)/self.dtau
+            
+                if self.plotting:
+                    plt.scatter(x,P_recrossDeath)
+                    plt.show()
                 #print 'P_recrossDeath 1', P_recrossDeath
-                P_recrossDeath=P_recrossDeath[mask_survive]
-                Diff=N_r[mask_survive]-P_recrossDeath  ##Should this be a different random number?
+                #P_recrossDeath=P_recrossDeath[mask_survive]
+                Diff=N_r-P_recrossDeath
+                #Diff=N_r[mask_survive]-P_recrossDeath  ##Should this be a different random number?
                 mask_survive_recross=(Diff>0)
                 tempRecrossCensus=np.sum(np.array(Diff<0).astype(int))
-                survivors=survivors[mask_survive_recross]            
-                
+                #print mask_survive[0:10], mask_survive_recross[0:10]
+                mask_survive=np.logical_and(mask_survive, mask_survive_recross)
+                survivors=x[mask_survive]            
+                #print mask_survive_recross[0:10]
+                #print survivors.shape
+                #print 'Recross Deaths', tempRecrossCensus,
             #Creation of a random selection of walkers in the
             P_exp_b=np.exp(-(v-v_ref)*self.dtau)-1.0
             
@@ -109,12 +122,12 @@ class wavefunction:
                     temp=np.tile(particle,weight)
                     new_pop=np.concatenate((new_pop,temp))
             next_gen=new_pop
-            #print'Census: Deaths:',nDeaths,'. Births:',nBirths, ". Add' births: ", addBirthtot,
+
 
             #collect survivors and next generation
             new_population=np.concatenate((survivors,next_gen))
             N_size_step=new_population.size
-            
+            #print '. Births:',nBirths, ". Add' births: ", addBirthtot
             #readjust V_ref
             v_average=np.average(self.V(new_population))
             v_ref=v_average+(self.alpha*(1-float(N_size_step)/float(nSize)))
@@ -129,8 +142,8 @@ class wavefunction:
 #propagate wavefunction for nsteps WITHOUT kmnowing the final v_ref
 #take in walker positions, V, nsteps, delta t
 #return vref measurment (avearged over 1000 steps, only at equilibrium), snapshots of wavefunction every 500 t steps after equilibration
-        print 'Average from ',nSteps/2,' steps until the end is ',np.average(vRefList[nSteps/2:])*au2wn
-        #print 'final number of ancestors', N_size_step
+        print 'Average from ',nSteps/2,' steps until the end is ',np.average(vRefList[nSteps/2:])*au2wn,
+        print 'final number of ancestors', N_size_step
         return np.average(vRefList[nSteps/2:])*au2wn
 
 #function diffuse

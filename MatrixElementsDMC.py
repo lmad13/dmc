@@ -3,21 +3,21 @@ import numpy as np
 nWalkers=2000
 Wfn0=dmc.wavefunction(nWalkers,'harmonic',plotting=False)
 v_ref=[]
-nReps=10
+nReps=2
 for n in range(nReps):
-    v_ref.append(Wfn0.propagate(Wfn0.xcoords,100))
+    v_ref.append(Wfn0.propagate(Wfn0.xcoords,10))
 print 'average energy',np.average(v_ref)
 print 'standard deviation', np.std(v_ref)
 print 'uncertainity', (np.max(v_ref)-np.min(v_ref))/(2.0*np.sqrt(nReps))
 print Wfn0.omega/2.0
-
+nReps=20
 Wfn1=dmc.wavefunction(nWalkers,'half harmonic',plotting=False)
 v_ref_1=[]
 for n in range(nReps):
-    v_ref.append(Wfn1.propagate(Wfn1.xcoords,100))
-print 'v1 average energy',np.average(v_ref)
-print 'v1 standard deviation', np.std(v_ref)
-print 'v1 uncertainity', (np.max(v_ref)-np.min(v_ref))/(2.0*np.sqrt(nReps))
+    v_ref_1.append(Wfn1.propagate(Wfn1.xcoords+.1,1000))
+print 'v1 average energy',np.average(v_ref_1)
+print 'v1 standard deviation', np.std(v_ref_1)
+print 'v1 uncertainity', (np.max(v_ref_1)-np.min(v_ref_1))/(2.0*np.sqrt(nReps))
 print 3.0*Wfn1.omega/2.0
 
 
