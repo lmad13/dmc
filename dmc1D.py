@@ -15,7 +15,10 @@ class wavefunction:
         self.mu_dx=0.0
         self.alpha=.25/self.dtau
         self.plotting=plotting
-        self.recrossing=True if potential=='half harmonic' else False
+        self.recrossing=True if 'half harmonic' in potential else False
+        print 'recrossing is ', self.recrossing
+    def setX(self,x):
+        self.xcoords=x
 
     def set_dtau(self):
         print 'set dtau to be ',5.0
@@ -28,6 +31,20 @@ class wavefunction:
         if molecule=='H2':
             return (massH*massH)/(massH+massH)*conversionFactor
 
+    def getIdealVref(self):
+        if self.potential=='harmonic':
+            return 2000.0/(2.0*au2wn)
+        
+        elif 'half harmonic' in self.potential:
+            return 3.0*2000.0/(2.0*au2wn)
+        
+    def getAlpha(self):
+        self.omega=2000.0
+        k=(self.omega*2.0*np.pi*3.0*10**(10))**2*self.mass #cm-1                                            
+        convfactor=9.10938291e-31*(1.0/4.35974417e-18)*(5.2917721092e-11)**2     #kg/amu Eh/J  m**2/Bh**2   
+        k=k*convfactor
+        alpha=np.sqrt(k*self.mass)
+        return alpha
     def V(self,x):
         #input in bohr, output in a.u.
         self.omega=2000.0
@@ -36,26 +53,35 @@ class wavefunction:
         k=k*convfactor
         if self.potential=='harmonic':
             v=0.5*k*(x*x)
-        if self.potential=='half harmonic':
+        if self.potential=='half harmonic right':
             #v=0.5*k*(x*x) if x>0 else 100000
             inf=10000.0
             v=0.5*k*(x*x)
             mask=(x<0.0)
             v[mask]=inf
             #v=[vb if c else vinf for (c,vb,vinf) in zip(x>0.0,0.5*k*(x*x),inf*np.ones(x.size))]
+        if self.potential=='half harmonic left':
+            #v=0.5*k*(x*x) if x>0 else 100000
+            inf=10000.0
+            v=0.5*k*(x*x)
+            mask=(x>0.0)
+            v[mask]=inf
+
         return v
 
 
 #function propagate
-    def propagate(self,x,nSteps,setV_ref=False,ConstantV_ref=0):
-        printCensus=False
-        descendants=np.ones((x.size))  #not yet implemented
+    def propagate(self,x,nSteps,setV_ref=False,ConstantV_ref=0,printCensus=False,nSize=0):
+
+        descendants=np.zeros((x.size))  #not yet implemented
+        whoYaFrom=np.arange(x.size)
         N_size_step=x.size
-        nSize=x.size
+        if nSize==0:#if it is the default value of zero...it needs to be set.
+            nSize=x.size
         if setV_ref:
             v_ref=ConstantV_ref
         else:
-            v_ref=np.average(self.V(x))
+            v_ref=np.average(self.V(x))#+(self.alpha*(1-float(N_size_step)/float(nSize)))
         vRefList=[]
         population=[]
 
@@ -76,6 +102,7 @@ class wavefunction:
             mask_survive = (Diff>0)
             nDeaths=np.sum(np.array(Diff<0).astype(int))
             survivors=x[mask_survive]
+            
             if printCensus: print'Census: Deaths:',nDeaths, 
 
             #recrossing correction for pop near node, only true for half harmonic PES
@@ -94,10 +121,11 @@ class wavefunction:
             P_exp_b=np.exp(-(v-v_ref)*self.dtau)-1.0
             weight_P_b=P_exp_b.astype(int)
             P_b=P_exp_b-weight_P_b            #classically allowed region
-            P_b[np.logical_not(mask_survive)]=0.0
+            #P_b[np.logical_not(mask_survive)]=0.0
             Diff=N_r-P_b
             mask_b = (Diff<0)
             next_gen=x[mask_b] 
+            new_pop_whoYaFrom=whoYaFrom[mask_b]
             nBirths=np.sum(np.array(Diff<0).astype(int))
             addBirthtot=0
             new_pop=next_gen
@@ -112,9 +140,11 @@ class wavefunction:
                     addBirthtot=addBirthtot+weight
 
                     temp=np.tile(particle,weight)
+                    temp_whoYaFrom=np.tile(whoYaFrom[p],weight)
                     new_pop=np.concatenate((new_pop,temp))
+                    new_pop_whoYaFrom=np.concatenate((new_pop_whoYaFrom,temp_whoYaFrom))
             next_gen=new_pop
-
+            next_gen_whoYaFrom=new_pop_whoYaFrom
             #collect survivors and next generation
             new_population=np.concatenate((survivors,next_gen))
             N_size_step=new_population.size
@@ -126,17 +156,19 @@ class wavefunction:
                 v_ref=v_average+(self.alpha*(1-float(N_size_step)/float(nSize)))
             if printCensus: print '(',N_size_step,'/',nSize,') v_ref',v_ref, '=', v_average,'+', (self.alpha*(1-float(N_size_step)/float(nSize)))
 
-            if v_ref<0:
+            if v_ref<0 and step>5:
                 print 'this is problematic.  NSize is probably too small'
                 print' step:',step, v_ref, ':',float(N_size_step)/float(nSize), '=', float(N_size_step),'/',float(nSize)
 
             vRefList.append(v_ref)
             population.append(N_size_step)
-
+            whoYaFrom=np.concatenate((whoYaFrom[mask_survive],next_gen_whoYaFrom))
             x=new_population
-
-        print 'Average from ',nSteps/2,' steps until the end is ',np.average(vRefList[nSteps/2:])*au2wn,
-        print 'final number of ancestors', N_size_step
+            #print x.shape, whoYaFrom.shape
+        #print 'Average from ',nSteps/2,' steps until the end is ',np.average(vRefList[nSteps/2:])*au2wn,
+        #print 'final number of ancestors', N_size_step
+        for anc in whoYaFrom:
+            descendants[anc]=descendants[anc]+1
 
         return vRefList, population, x, descendants
 
