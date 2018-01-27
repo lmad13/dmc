@@ -42,7 +42,7 @@ AveDescendantWeightsExcVRef=[] #will be indexed nReps, x.size
 xhists_0=np.zeros((5,nReps,nBins)) #Psi, Psi_popPsi_pop, Psi_popPsi_vref
 
 Wfn0.setX(Wfn0.xcoords+.1)
-##calculate overlaps
+##calculate expectation values
 Destination='nT'+str(nDesSteps)+'nR'+str(nReps)+'nRD'+str(nRepsDesc)+'Pop'+str(nWalkers)+'/'
 print 'Destination:', Destination
 file_path=Destination+'logFile.data'
