@@ -3,17 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 au2wn=219474.63
-nWalkers=1000
 
+nReps=5
+nSteps=100
+
+nWalkers=3000
+nDesSteps=150
+nRepsDesc=100
 
 Wfn1Left =dmc.wavefunction(nWalkers,'half harmonic left',plotting=False)
 Wfn1Right=dmc.wavefunction(nWalkers,'half harmonic right',plotting=False)
 idealVref=Wfn1Left.getIdealVref()
 
-nReps=5
-nRepsDesc=5
-nSteps=100
-nDesSteps=25
 v_ref_Left=[]
 pop_Left=[]
 v_ref_array_Left=np.zeros((nReps,nSteps))
@@ -75,9 +76,12 @@ for n in range(nReps):
 
     AveDescendantWeightsLeftVRef.append(np.average(desc_weight_array,axis=0))
     Psi2LeftHist_pop_vref,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True,weights=AveDescendantWeightsLeftVRef[n])
-    R2_LeftPop[n]=np.sum(x*x*AveDescendantWeightsLeftPop[n])/np.sum(AveDescendantWeightsLeftPop[n])
-    R2_LeftVRef[n]=np.sum(x*x*AveDescendantWeightsLeftVRef[n])/np.sum(AveDescendantWeightsLeftVRef[n])
+    R2_LeftPop[n]=0.5*np.sum(x*x*AveDescendantWeightsLeftPop[n])/np.sum(AveDescendantWeightsLeftPop[n])
+    R2_LeftVRef[n]=0.5*np.sum(x*x*AveDescendantWeightsLeftVRef[n])/np.sum(AveDescendantWeightsLeftVRef[n])
+
 ##########
+
+
 ##########
     vref,pop,x,d=Wfn1Right.propagate(Wfn1Right.xcoords,nSteps)
     vref=np.array(vref)
@@ -107,8 +111,8 @@ for n in range(nReps):
     AveDescendantWeightsRightVRef.append(np.average(desc_weight_array,axis=0))
     Psi2RightHist_pop_vref,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True,weights=AveDescendantWeightsRightVRef[n])
     
-    R2_RightPop[n]=np.sum(x*x*AveDescendantWeightsRightPop[n])/np.sum(AveDescendantWeightsRightPop[n])
-    R2_RightVRef[n]=np.sum(x*x*AveDescendantWeightsRightVRef[n])/np.sum(AveDescendantWeightsRightVRef[n])
+    R2_RightPop[n]=0.5*np.sum(x*x*AveDescendantWeightsRightPop[n])/np.sum(AveDescendantWeightsRightPop[n])
+    R2_RightVRef[n]=0.5*np.sum(x*x*AveDescendantWeightsRightVRef[n])/np.sum(AveDescendantWeightsRightVRef[n])
 
 
     xhists_1[0,n]=Psi1LeftHist-Psi1RightHist
@@ -125,17 +129,43 @@ print 'Ideal is:', idealVref*au2wn
 
 ## Calculate V_1|R2|V1
 print 'Analytical R^2 is', 1.5*1.0/Wfn1Left.getAlpha()
-print 'Numerical', R2_LeftPop,R2_LeftVRef, R2_RightPop,R2_RightVRef
+#print 'Numerical', R2_LeftPop,R2_LeftVRef, R2_RightPop,R2_RightVRef
 print 'averaged', np.average(R2_LeftPop+R2_RightPop), np.average(R2_LeftVRef+R2_RightVRef)
+print 'standard deviation', np.std(R2_LeftPop+R2_RightPop),np.std(R2_LeftVRef+R2_RightVRef)
+unc=[(np.max(R2_LeftPop+R2_RightPop)-np.min(R2_LeftPop+R2_RightPop))/(2*np.sqrt(nReps)),(np.max(R2_LeftVRef+R2_RightVRef)-np.min(R2_LeftVRef+R2_RightVRef))/(2.0*np.sqrt(nReps))]
+print 'uncertainity', unc
+fileR2Data=open('R2Data.data','a')
+fileR2Data.write(str(1)+'   '+str(nWalkers)+'   '+str(nSteps)+'   '+str(nReps)+'   '+str(nDesSteps)+'   '+str(nRepsDesc)+'      ')
+fileR2Data.write(str(1.5*1.0/Wfn1Left.getAlpha())+'   '+str(np.average(R2_LeftPop+R2_RightPop))+'   '+str(np.average(R2_LeftVRef+R2_RightVRef))+'   '+str(np.std(R2_LeftPop+R2_RightPop))+'   '+str(np.std(R2_LeftVRef+R2_RightVRef))+'   '+str(unc[0])+'   '+str(unc[1])+'\n')
 colors=['r','b','k','g']
+red='#f60000'
+darkRed='#9c0202'
+orange='#ff9a00'
+darkOrange='#d86200'
+purple='#ad4dff'
+darkPurple='#5a00b8'
+pink='#fe7eff'
+darkPink='#b900ba'
+blue='#4d62ff'
+darkBlue='#0c008d'
+green='#01b24c'
+darkGreen='#005423'
 #plotting first v_Ref
 for n in range(nReps):
-    plt.plot(np.arange(nSteps),v_ref_array_Left[n],c='r')
-    plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Left[0,n],c='m')
+    plt.plot(np.arange(nSteps),v_ref_array_Left[n],c='blue')
+    plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Left[0,n],c='pink')
+    plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Left[1,n],c='darkgreen')
+    plt.plot(np.arange(nSteps),v_ref_array_Right[n],c='red')
+    plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Right[0,n],c='k')
+    plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Right[1,n],c='darkorange')
 plt.show()    
 for n  in range(nReps):
-    plt.plot(np.arange(nSteps),pop_array_Left[n],c='r')
-    plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Left[0,n],c='m')
+    plt.plot(np.arange(nSteps),pop_array_Left[n],c='blue')
+    plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Left[0,n],c='pink')
+    plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Left[1,n],c='darkgreen')
+    plt.plot(np.arange(nSteps),pop_array_Right[n],c='red')
+    plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Right[0,n],c='k')
+    plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Right[1,n],c='darkorange')
 plt.show()
 
 bin_center=(bin_edges[:-1]+bin_edges[1:])/2.0
