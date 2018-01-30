@@ -23,6 +23,9 @@ class wavefunction:
     def set_dtau(self):
         print 'set dtau to be ',5.0
         return 5.0
+    def get_dtau(self):
+        
+        return self.dtau
 
     def set_mass(self,molecule):
         #why? for reduced mass in amu
