@@ -1,15 +1,23 @@
+#!/usr/bin/python
 import  dmc1D as dmc
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 au2wn=219474.63
 
-nReps=5
-nSteps=100
+if len(sys.argv)<5:
+	print 'usage: ./scipt.py nWalkers nReps nSteps nDesSteps nRepsDesc'
+	end
+else:
+	print sys.argv
 
-nWalkers=3000
-nDesSteps=150
-nRepsDesc=100
+nWalkers=int(sys.argv[1])
+nReps=int(sys.argv[2])
+nSteps=int(sys.argv[3])
+nDesSteps=int(sys.argv[4])
+nRepsDesc=int(sys.argv[5])
+
 
 Wfn1Left =dmc.wavefunction(nWalkers,'half harmonic left',plotting=False)
 Wfn1Right=dmc.wavefunction(nWalkers,'half harmonic right',plotting=False)
@@ -54,6 +62,7 @@ for n in range(nReps):
     v_ref_Left.append(np.average(vref[nSteps/2:])*au2wn)
     pop_Left.append(np.average(pop[nSteps/2:]))
     v_ref_array_Left[n,:]=vref*au2wn
+    print 'Left  ',n,'of ',nReps,' vRef:',v_ref_Left[-1], 'pop:',pop_Left[-1]
     pop_array_Left[n,:]=pop
     Psi1LeftHist,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True)
     desc_weight_array=np.zeros((nRepsDesc,x.size))
@@ -89,6 +98,7 @@ for n in range(nReps):
     pop_Right.append(np.average(pop[nSteps/2:]))
     v_ref_array_Right[n,:]=vref*au2wn
     pop_array_Right[n,:]=pop
+    print 'Right ', n,'of ',nReps,' vRef:',v_ref_Right[-1], 'pop:',pop_Right[-1]
     Psi1RightHist,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True)
     desc_weight_array=np.zeros((nRepsDesc,x.size))
     #for psi squared
@@ -158,7 +168,8 @@ for n in range(nReps):
     plt.plot(np.arange(nSteps),v_ref_array_Right[n],c='red')
     plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Right[0,n],c='k')
     plt.plot(np.arange(nDesSteps)+nSteps,v_ref_desc_array_Right[1,n],c='darkorange')
-plt.show()    
+plt.savefig(Destination+'vRef.png')
+plt.clf()    
 for n  in range(nReps):
     plt.plot(np.arange(nSteps),pop_array_Left[n],c='blue')
     plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Left[0,n],c='pink')
@@ -166,17 +177,18 @@ for n  in range(nReps):
     plt.plot(np.arange(nSteps),pop_array_Right[n],c='red')
     plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Right[0,n],c='k')
     plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array_Right[1,n],c='darkorange')
-plt.show()
-
+plt.savefig(Destination+'Pop.png')
+plt.clf()
 bin_center=(bin_edges[:-1]+bin_edges[1:])/2.0
 for n in range(nReps):
     plt.plot(bin_center,xhists_1[0,n],c='r')
-plt.show()
-
+plt.savefig(Destination+'Psi.png')
+plt.clf()
 for n in range(nReps):
     plt.plot(bin_center,xhists_1[1,n],c='r')
     plt.plot(bin_center,xhists_1[2,n],c='m')
-plt.show()
+plt.savefig(Destination+'Psi2.png')
+plt.clf()
 
 print 'done!'
 

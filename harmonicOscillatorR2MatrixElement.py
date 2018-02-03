@@ -1,15 +1,23 @@
+#!/usr/bin/python
+
 import  dmc1D as dmc
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 import os
 au2wn=219474.63
 
-nReps=10
-nSteps=100
+if len(sys.argv)<5:
+	print 'usage: ./scipt.py nWalkers nReps nSteps nDesSteps nRepsDesc'
+	end
+else:
+	print sys.argv
 
-nWalkers=2000
-nDesSteps=150
-nRepsDesc=100
+nWalkers=int(sys.argv[1])
+nReps=int(sys.argv[2])
+nSteps=int(sys.argv[3])
+nDesSteps=int(sys.argv[4])
+nRepsDesc=int(sys.argv[5])
 
 Wfn0 =dmc.wavefunction(nWalkers,'harmonic',plotting=False)
 
@@ -117,7 +125,7 @@ for n in range(nReps):
 plt.ylabel('Energy (1/cm)')
 plt.xlabel('Step ('+str(Wfn0.get_dtau())+')')
 plt.savefig(Destination+'Step-Energy.png')
-plt.show()    
+plt.clf()
 for n  in range(nReps):
     plt.plot(np.arange(nSteps),pop_array[n],c='blue')
     plt.plot(np.arange(nDesSteps)+nSteps,pop_desc_array[0,n],c='pink')
@@ -125,7 +133,7 @@ for n  in range(nReps):
 plt.ylabel('Population (Walkers)')
 plt.xlabel('Step ('+str(Wfn0.get_dtau())+')')
 plt.savefig(Destination+'Step-Pop.png')
-plt.show()
+plt.clf()
 
 bin_center=(bin_edges[:-1]+bin_edges[1:])/2.0
 for n in range(nReps):
@@ -133,7 +141,7 @@ for n in range(nReps):
 plt.ylabel('Amplitude (Psi)')
 plt.xlabel('X (bohr)')
 plt.savefig(Destination+'Psi_0.png')
-plt.show()
+plt.clf()
 
 for n in range(nReps):
     plt.plot(bin_center,xhists_0[1,n],c='r')
@@ -141,7 +149,7 @@ for n in range(nReps):
 plt.ylabel('Amplitude (Psi*Psi)')
 plt.xlabel('X (bohr)')
 plt.savefig(Destination+'Psi_0Psi_0.png')
-plt.show()
+plt.clf()
 
 print 'done!'
 
