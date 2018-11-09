@@ -93,6 +93,8 @@ for n in range(nReps):
         desc_weight_array_0[i]=descendantWeights
 
     AveDescendantWeightsGroundPop.append(np.average(desc_weight_array_0,axis=0))
+    plt.scatter(x,AveDescendantWeightsGroundPop[n])
+    plt.show()
     Psi2Hist_0pop_0pop,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),
                                               density=True,weights=AveDescendantWeightsGroundPop[n])
                                           
@@ -166,8 +168,8 @@ for n in range(nReps):
 		     AveDescendantWeightsGroundPop[n][nonZeros])
     denominator=np.sum((AveDescendantWeightsGroundPop[n][nonZeros]**2)/
 		       AveDescendantWeightsGroundPop[n][nonZeros])
-    #<1|R2|1>/<1|1> for pop
     R2_0Pop[n]=numerator/denominator
+    #<1|R2|1>/<1|1> for pop
     numerator=np.sum(x[nonZeros]*x[nonZeros]*
                      ((AveDescendantWeightsExcPop[n][nonZeros])**2)/
 		     AveDescendantWeightsGroundPop[n][nonZeros])

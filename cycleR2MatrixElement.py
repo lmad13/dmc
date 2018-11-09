@@ -8,10 +8,10 @@ nRepsDesc=25
 count=0
 starttime=time.time()
 timeRate=4.8E-6  #my rough estimate
-for nDescSteps in range(10,30,10):
-    for nRepsDesc in range(50,225,50):
-        for nReps in range (5,10,5):
-            for nWalkers in range(2000,2500,500):
+for nDescSteps in [10,100,200,500]:
+    for nRepsDesc in [1,2]:
+        for nReps in [1,2]:
+            for nWalkers in [2000,2000]:
                 count=count+1
                 print '\n\n################    WORKING ON #',count,
                 print str(len(range(50,125,25))*len(range(25,125,25))*len((5,15,5))*len(range(1000,1500,500))),' #########'

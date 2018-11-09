@@ -74,7 +74,10 @@ for n in range(nReps):
         pop_desc_array[1,n,:]=popd
         desc_weight_array[i]=descendantWeights
 
+	
     AveDescendantWeightsVRef.append(np.average(desc_weight_array,axis=0))
+    plt.scatter(x,AveDescendantWeightsVRef[n])
+    plt.show()
     Psi2Hist_pop_vref,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True,weights=AveDescendantWeightsVRef[n])
     R2_Pop[n]=np.sum(x*x*AveDescendantWeightsPop[n])/np.sum(AveDescendantWeightsPop[n])
     R2_VRef[n]=np.sum(x*x*AveDescendantWeightsVRef[n])/np.sum(AveDescendantWeightsVRef[n])

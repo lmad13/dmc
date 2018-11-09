@@ -38,6 +38,7 @@ for n in range(nReps):
     Psi2Hist_pop_pop,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True,weights=descendantWeights)
     #second the unusual way, setting vref to be the 'proper' value
     vrd,popd,xd,descendantWeights=Wfn0.propagate(x,nDesSteps,setV_ref=True,ConstantV_ref=idealVref)
+    ### check herer for UW plot agreement
     v_ref_desc_array_0[1,n,:]=np.array(vrd)*au2wn
     pop_desc_array_0[1,n,:]=popd
     Psi2Hist_pop_vref,bin_edges=np.histogram(x, bins=nBins, range=(-1.0,1.0),density=True,weights=descendantWeights)
